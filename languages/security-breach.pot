@@ -1,0 +1,146 @@
+# Security Breach Plugin - POT Template
+# This file is distributed under the same license as the Security Breach Plugin package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Security Breach Plugin 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-15 00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Security Breach"
+msgstr ""
+
+msgid "Scan Results"
+msgstr ""
+
+msgid "Settings"
+msgstr ""
+
+msgid "Run Security Scan"
+msgstr ""
+
+msgid "Scanning..."
+msgstr ""
+
+msgid "Scan Complete"
+msgstr ""
+
+msgid "WordPress Version"
+msgstr ""
+
+msgid "SSL Status"
+msgstr ""
+
+msgid "Admin Users"
+msgstr ""
+
+msgid "File Editing"
+msgstr ""
+
+msgid "Critical"
+msgstr ""
+
+msgid "High"
+msgstr ""
+
+msgid "Medium"
+msgstr ""
+
+msgid "Low"
+msgstr ""
+
+msgid "Pending"
+msgstr ""
+
+msgid "Resolved"
+msgstr ""
+
+msgid "All Severities"
+msgstr ""
+
+msgid "All Statuses"
+msgstr ""
+
+msgid "All Types"
+msgstr ""
+
+msgid "Filter"
+msgstr ""
+
+msgid "Clear Filters"
+msgstr ""
+
+msgid "Bulk Actions"
+msgstr ""
+
+msgid "Mark as Resolved"
+msgstr ""
+
+msgid "Apply"
+msgstr ""
+
+msgid "Severity"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Description"
+msgstr ""
+
+msgid "Suggestion"
+msgstr ""
+
+msgid "Date"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Solution:"
+msgstr ""
+
+msgid "Vulnerability Summary"
+msgstr ""
+
+msgid "No vulnerabilities found. Run a security scan to check for issues."
+msgstr ""
+
+msgid "Scan Frequency"
+msgstr ""
+
+msgid "Email Notifications"
+msgstr ""
+
+msgid "Notification Email"
+msgstr ""
+
+msgid "Enable Automatic Scanning"
+msgstr ""
+
+msgid "WordPress Core"
+msgstr ""
+
+msgid "Plugins"
+msgstr ""
+
+msgid "Themes"
+msgstr ""
+
+msgid "Malware Detection"
+msgstr ""
+
+msgid "Database Cleanup"
+msgstr ""
+
+msgid "Export/Import Settings"
+msgstr ""
+
+msgid "System Information"
+msgstr ""
