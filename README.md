@@ -213,6 +213,13 @@ For support, feature requests, or bug reports:
 
 This plugin is licensed under the GPL v2 or later.
 
+## Documentation
+
+Additional documentation is available in the `documents/` directory:
+
+- **[Database Fix Documentation](documents/DATABASE-FIX-README.md)** - Detailed information about database table fixes and troubleshooting
+- **[License](documents/LICENSE)** - Full license text
+
 ## Credits
 
 Developed with security best practices and WordPress coding standards.

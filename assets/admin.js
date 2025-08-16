@@ -12,6 +12,7 @@ jQuery(document).ready(function($) {
             $('#run-scan').on('click', this.runSecurityScan);
             $(document).on('click', '.vulnerability-header', this.toggleVulnerabilityDetails);
             $(document).on('click', '.mark-resolved', this.markAsResolved);
+            $('#recreate-table').on('click', this.recreateTable);
             this.setupProgressAnimation();
         },
         
@@ -273,6 +274,52 @@ jQuery(document).ready(function($) {
                     }
                 },
                 error: function() {
+                    SecurityBreach.showNotification('Server error occurred', 'error');
+                }
+            });
+        },
+        
+        recreateTable: function(e) {
+            e.preventDefault();
+            
+            var $button = $(this);
+            var $result = $('#recreate-table-result');
+            
+            if (!confirm('This will recreate the database table and remove all existing scan data. Are you sure you want to continue?')) {
+                return;
+            }
+            
+            // Disable button and show loading
+            $button.prop('disabled', true).text('Recreating...');
+            $result.hide();
+            
+            $.ajax({
+                url: securityBreachAjax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'security_breach_recreate_table',
+                    nonce: securityBreachAjax.nonce
+                },
+                success: function(response) {
+                    $button.prop('disabled', false).text('Recreate Database Table');
+                    
+                    if (response.success) {
+                        $result.html('<div class="notice notice-success inline"><p>' + response.data.message + '</p></div>').show();
+                        SecurityBreach.showNotification('Database table recreated successfully', 'success');
+                        
+                        // Refresh the page after 2 seconds to update the diagnostics
+                        setTimeout(function() {
+                            location.reload();
+                        }, 2000);
+                    } else {
+                        var errorMsg = response.data && response.data.message ? response.data.message : 'Failed to recreate database table';
+                        $result.html('<div class="notice notice-error inline"><p>' + errorMsg + '</p></div>').show();
+                        SecurityBreach.showNotification('Failed to recreate database table', 'error');
+                    }
+                },
+                error: function() {
+                    $button.prop('disabled', false).text('Recreate Database Table');
+                    $result.html('<div class="notice notice-error inline"><p>Server error occurred while recreating table</p></div>').show();
                     SecurityBreach.showNotification('Server error occurred', 'error');
                 }
             });

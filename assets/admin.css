@@ -87,6 +87,12 @@
     border-left-color: #dc3545;
 }
 
+.metric-status.status-error {
+    background: #f8d7da;
+    color: #721c24;
+    border-left-color: #dc3545;
+}
+
 .security-metric.status-good {
     border-left-color: #28a745;
 }
@@ -97,6 +103,21 @@
 
 .security-metric.status-critical {
     border-left-color: #dc3545;
+}
+
+.security-metric.status-error {
+    border-left-color: #dc3545;
+}
+
+/* Database Status Indicators */
+.status-good {
+    color: #155724;
+    font-weight: 600;
+}
+
+.status-error {
+    color: #721c24;
+    font-weight: 600;
 }
 
 /* Security Tips */

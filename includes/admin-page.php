@@ -102,26 +102,42 @@ if (!defined('ABSPATH')) {
                     <?php
                     global $wpdb;
                     $table_name = $wpdb->prefix . 'security_breach_scans';
-                    $recent_scans = $wpdb->get_results(
-                        "SELECT DISTINCT scan_date, COUNT(*) as vulnerability_count 
-                         FROM $table_name 
-                         GROUP BY DATE(scan_date) 
-                         ORDER BY scan_date DESC 
-                         LIMIT 5"
-                    );
                     
-                    if ($recent_scans) {
-                        echo '<ul class="recent-scans">';
-                        foreach ($recent_scans as $scan) {
-                            $date = date('M j, Y', strtotime($scan->scan_date));
-                            echo '<li>';
-                            echo '<strong>' . $date . '</strong><br>';
-                            echo sprintf(_n('%d vulnerability found', '%d vulnerabilities found', $scan->vulnerability_count, 'security-breach'), $scan->vulnerability_count);
-                            echo '</li>';
+                    // Check if table exists first
+                    $table_exists = $wpdb->get_var(
+                        $wpdb->prepare(
+                            "SHOW TABLES LIKE %s",
+                            $table_name
+                        )
+                    ) === $table_name;
+                    
+                    if ($table_exists) {
+                        $recent_scans = $wpdb->get_results(
+                            "SELECT DISTINCT scan_date, COUNT(*) as vulnerability_count 
+                             FROM $table_name 
+                             GROUP BY DATE(scan_date) 
+                             ORDER BY scan_date DESC 
+                             LIMIT 5"
+                        );
+                        
+                        if ($recent_scans) {
+                            echo '<ul class="recent-scans">';
+                            foreach ($recent_scans as $scan) {
+                                $date = date('M j, Y', strtotime($scan->scan_date));
+                                echo '<li>';
+                                echo '<strong>' . $date . '</strong><br>';
+                                echo sprintf(_n('%d vulnerability found', '%d vulnerabilities found', $scan->vulnerability_count, 'security-breach'), $scan->vulnerability_count);
+                                echo '</li>';
+                            }
+                            echo '</ul>';
+                        } else {
+                            echo '<p>' . __('No scans performed yet.', 'security-breach') . '</p>';
                         }
-                        echo '</ul>';
                     } else {
-                        echo '<p>' . __('No scans performed yet.', 'security-breach') . '</p>';
+                        echo '<div class="notice notice-error inline">';
+                        echo '<p><strong>' . __('Database table missing!', 'security-breach') . '</strong> ';
+                        echo __('The plugin database table does not exist. This may happen after reinstalling the plugin.', 'security-breach') . '</p>';
+                        echo '</div>';
                     }
                     ?>
                     
@@ -130,6 +146,61 @@ if (!defined('ABSPATH')) {
                             <?php _e('View All Results', 'security-breach'); ?>
                         </a>
                     </p>
+                </div>
+            </div>
+            
+            <div class="postbox">
+                <h2 class="hndle"><span><?php _e('Database Diagnostics', 'security-breach'); ?></span></h2>
+                <div class="inside">
+                    <?php
+                    global $wpdb;
+                    $table_name = $wpdb->prefix . 'security_breach_scans';
+                    $table_exists = $wpdb->get_var(
+                        $wpdb->prepare(
+                            "SHOW TABLES LIKE %s",
+                            $table_name
+                        )
+                    ) === $table_name;
+                    
+                    $db_version = get_option('security_breach_db_version', __('Not set', 'security-breach'));
+                    ?>
+                    
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row"><?php _e('Database Table', 'security-breach'); ?></th>
+                            <td>
+                                <span class="<?php echo $table_exists ? 'status-good' : 'status-error'; ?>">
+                                    <?php echo $table_exists ? __('✓ Table exists', 'security-breach') : __('✗ Table missing', 'security-breach'); ?>
+                                </span>
+                                <br><small><?php echo $table_name; ?></small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php _e('Database Version', 'security-breach'); ?></th>
+                            <td><?php echo esc_html($db_version); ?></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php _e('Plugin Version', 'security-breach'); ?></th>
+                            <td><?php echo SECURITY_BREACH_VERSION; ?></td>
+                        </tr>
+                    </table>
+                    
+                    <?php if (!$table_exists): ?>
+                    <div class="notice notice-warning inline">
+                        <p><?php _e('The database table is missing. This can happen after uninstalling and reinstalling the plugin.', 'security-breach'); ?></p>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <p>
+                        <button id="recreate-table" class="button button-secondary">
+                            <?php _e('Recreate Database Table', 'security-breach'); ?>
+                        </button>
+                        <span class="description">
+                            <?php _e('This will recreate the plugin database table. Any existing scan data will be lost.', 'security-breach'); ?>
+                        </span>
+                    </p>
+                    
+                    <div id="recreate-table-result" style="display: none;"></div>
                 </div>
             </div>
         </div>

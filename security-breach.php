@@ -39,11 +39,15 @@ class SecurityBreachPlugin {
         add_action('wp_ajax_run_security_scan', array($this, 'ajax_run_security_scan'));
         add_action('wp_ajax_mark_vulnerability_resolved', array($this, 'ajax_mark_resolved'));
         add_action('wp_ajax_security_breach_cleanup', array($this, 'ajax_cleanup_old_scans'));
+        add_action('wp_ajax_security_breach_recreate_table', array($this, 'ajax_recreate_table'));
         add_action('admin_notices', array($this, 'admin_notices'));
         
         // Register activation and deactivation hooks
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_deactivation_hook(__FILE__, array($this, 'deactivate'));
+        
+        // Check database on every admin load to ensure table exists
+        add_action('admin_init', array($this, 'check_database_setup'));
     }
     
     public function init() {
@@ -54,6 +58,9 @@ class SecurityBreachPlugin {
         // Create necessary database tables if needed
         $this->create_scan_results_table();
         
+        // Set database version
+        update_option('security_breach_db_version', SECURITY_BREACH_VERSION);
+        
         // Schedule daily security scans
         if (!wp_next_scheduled('security_breach_daily_scan')) {
             wp_schedule_event(time(), 'daily', 'security_breach_daily_scan');
@@ -62,6 +69,37 @@ class SecurityBreachPlugin {
     
     public function deactivate() {
         wp_clear_scheduled_hook('security_breach_daily_scan');
+    }
+    
+    /**
+     * Check if database tables exist and create them if they don't
+     * This ensures the plugin works correctly even after uninstall/reinstall
+     */
+    public function check_database_setup() {
+        $installed_version = get_option('security_breach_db_version', '0');
+        
+        // If version doesn't match or table doesn't exist, create/update table
+        if ($installed_version !== SECURITY_BREACH_VERSION || !$this->table_exists()) {
+            $this->create_scan_results_table();
+            update_option('security_breach_db_version', SECURITY_BREACH_VERSION);
+        }
+    }
+    
+    /**
+     * Check if the scan results table exists
+     */
+    private function table_exists() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'security_breach_scans';
+        
+        $table_exists = $wpdb->get_var(
+            $wpdb->prepare(
+                "SHOW TABLES LIKE %s",
+                $table_name
+            )
+        );
+        
+        return $table_exists === $table_name;
     }
     
     private function create_scan_results_table() {
@@ -83,7 +121,32 @@ class SecurityBreachPlugin {
         ) $charset_collate;";
         
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-        dbDelta($sql);
+        $result = dbDelta($sql);
+        
+        // Log any database errors for debugging
+        if ($wpdb->last_error) {
+            error_log('Security Breach Plugin - Database Error: ' . $wpdb->last_error);
+            error_log('Security Breach Plugin - SQL: ' . $sql);
+        }
+        
+        // Verify table was created successfully
+        if (!$this->table_exists()) {
+            error_log('Security Breach Plugin - Failed to create table: ' . $table_name);
+            
+            // Add admin notice if we're in admin context
+            if (is_admin()) {
+                add_action('admin_notices', function() {
+                    echo '<div class="notice notice-error"><p>';
+                    echo __('Security Breach Plugin: Failed to create database table. Please check your database permissions.', 'security-breach');
+                    echo '</p></div>';
+                });
+            }
+        } else {
+            // Success - log the creation
+            error_log('Security Breach Plugin - Successfully created/updated table: ' . $table_name);
+        }
+        
+        return $result;
     }
     
     public function add_admin_menu() {
@@ -198,6 +261,36 @@ class SecurityBreachPlugin {
         $result = $wpdb->query("DELETE FROM $table_name WHERE scan_date < DATE_SUB(NOW(), INTERVAL 30 DAY)");
         
         wp_send_json_success(array('deleted' => $result));
+    }
+    
+    public function ajax_recreate_table() {
+        check_ajax_referer('security_breach_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Insufficient permissions'));
+        }
+        
+        // Force recreation of the table
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'security_breach_scans';
+        
+        // Drop existing table if it exists
+        $wpdb->query("DROP TABLE IF EXISTS $table_name");
+        
+        // Create the table
+        $result = $this->create_scan_results_table();
+        
+        if ($this->table_exists()) {
+            wp_send_json_success(array(
+                'message' => __('Database table recreated successfully.', 'security-breach'),
+                'table_name' => $table_name
+            ));
+        } else {
+            wp_send_json_error(array(
+                'message' => __('Failed to recreate database table.', 'security-breach'),
+                'last_error' => $wpdb->last_error
+            ));
+        }
     }
     
     public function admin_notices() {

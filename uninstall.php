@@ -16,6 +16,7 @@ delete_option('security_breach_scan_themes');
 delete_option('security_breach_scan_core');
 delete_option('security_breach_scan_malware');
 delete_option('security_breach_severity_threshold');
+delete_option('security_breach_db_version');
 
 // Remove scheduled events
 wp_clear_scheduled_hook('security_breach_daily_scan');
